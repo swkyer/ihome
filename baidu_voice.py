@@ -7,27 +7,27 @@ import wave
 import urllib, urllib2, pycurl
 import base64, uuid
 import json
-import jieba, jieba.analyse
+import jieba.posseg
 
 
 ## get access token by api key & secret key
 
 PROCESSING = 0
 EXIT = 0
-EXTSTR = u'退出'
+EXTSTR = u'退出，'
 
 
 def process_voice_cmd(vocmd):
-    seg_list = jieba.cut(vocmd)
-    print(",".join(seg_list))
-    for x, w in jieba.analyse.extract_tags(vocmd, withWeight=True):
-        print('%s %s' % (x, w))
+    words = jieba.posseg.cut(vocmd)
+    for word, flag in words:
+        print('%s %s' % (word, flag))
+        
 
 def dump_res(buf):
     global PROCESSING, EXIT, EXTSTR
     print buf
     err = json.loads(buf)['err_no']
-    print 'err_no: %d' % err
+    #print 'err_no: %d' % err
     if err != 0:
         PROCESSING = 2
     else:
@@ -41,9 +41,7 @@ def dump_res(buf):
 def get_token():
     apiKey = "lGn7jCPtUChUvvsj2iEcLsYq"
     secretKey = "e9fedf7c4f715ae8ebbddabd90127421"
-
     auth_url = "https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + apiKey + "&client_secret=" + secretKey;
-
     res = urllib2.urlopen(auth_url)
     json_data = res.read()
     return json.loads(json_data)['access_token']
@@ -85,11 +83,11 @@ def record_audio(autio_path):
 
 IDX = 0
 if __name__ == "__main__":
-    global PROCESSING, EXIT,IDX
+    global PROCESSING, EXIT, IDX
     token = get_token()
     print token
     audio_p = '/tmp/audio.wav'
-    while IDX < 100:
+    while IDX < 10:
         IDX = IDX + 1
         record_audio(audio_p)
         PROCESSING = 1
