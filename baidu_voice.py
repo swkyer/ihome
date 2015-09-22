@@ -14,17 +14,14 @@ import jieba, jieba.analyse
 
 PROCESSING = 0
 EXIT = 0
-EXTSTR = u'�˳���'
+EXTSTR = u'退出'
 
-def get_token():
-    apiKey = "lGn7jCPtUChUvvsj2iEcLsYq"
-    secretKey = "e9fedf7c4f715ae8ebbddabd90127421"
 
-    auth_url = "https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + apiKey + "&client_secret=" + secretKey;
-
-    res = urllib2.urlopen(auth_url)
-    json_data = res.read()
-    return json.loads(json_data)['access_token']
+def process_voice_cmd(vocmd):
+    seg_list = jieba.cut(vocmd)
+    print(",".join(seg_list))
+    for x, w in jieba.analyse.extract_tags(vocmd, withWeight=True):
+        print('%s %s' % (x, w))
 
 def dump_res(buf):
     global PROCESSING, EXIT, EXTSTR
@@ -39,10 +36,17 @@ def dump_res(buf):
         if result[0] == EXTSTR:
             EXIT = 1
         PROCESSING = 0
-        seg_list = jieba.cut(result[0])
-        print(",".join(seg_list))
-        for x, w in jieba.analyse.extract_tags(result[0], withWeight=True):
-            print('%s %s' % (x, w))
+        process_voice_cmd(result[0])
+
+def get_token():
+    apiKey = "lGn7jCPtUChUvvsj2iEcLsYq"
+    secretKey = "e9fedf7c4f715ae8ebbddabd90127421"
+
+    auth_url = "https://openapi.baidu.com/oauth/2.0/token?grant_type=client_credentials&client_id=" + apiKey + "&client_secret=" + secretKey;
+
+    res = urllib2.urlopen(auth_url)
+    json_data = res.read()
+    return json.loads(json_data)['access_token']
 
 ## post audio to server
 def use_cloud(token, audio_p):
